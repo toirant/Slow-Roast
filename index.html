@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Slow Roast Coffee Club</title>
+    <meta name="description" content="A monthly coffee subscription for people who want to learn how to brew better at home." />
+    <meta property="og:title" content="Slow Roast Coffee Club" />
+    <meta property="og:description" content="A monthly coffee subscription for people who want to learn how to brew better at home." />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <script>
+      (function() {
+        // Prevent third-party browser extensions (e.g. Zerion wallet content-script)
+        // from throwing unhandled "Cannot redefine property: isZerion" errors.
+        const origDefineProperty = Object.defineProperty;
+        Object.defineProperty = function(obj, prop, descriptor) {
+          try {
+            return origDefineProperty.call(Object, obj, prop, descriptor);
+          } catch (err) {
+            if (prop === 'isZerion' || (err && String(err).includes('Cannot redefine property'))) {
+              return obj;
+            }
+            throw err;
+          }
+        };
+
+        const suppressExtensionError = function(e) {
+          const msg = e && (e.message || String(e));
+          const file = e && (e.filename || '');
+          const isExtension =
+            file.startsWith('chrome-extension:') ||
+            file.startsWith('moz-extension:') ||
+            file.includes('in-page.js') ||
+            (msg && (msg.includes('isZerion') || msg.includes('Cannot redefine property')));
+          if (isExtension) {
+            if (e.preventDefault) e.preventDefault();
+            if (e.stopImmediatePropagation) e.stopImmediatePropagation();
+            return true;
+          }
+        };
+
+        window.addEventListener('error', suppressExtensionError, true);
+        window.addEventListener('unhandledrejection', function(event) {
+          const reason = event && event.reason;
+          const msg = reason ? (reason.message || String(reason)) : '';
+          const stack = reason && reason.stack ? String(reason.stack) : '';
+          if (
+            msg.includes('isZerion') ||
+            msg.includes('Cannot redefine property') ||
+            stack.includes('chrome-extension:')
+          ) {
+            event.preventDefault();
+            event.stopImmediatePropagation();
+          }
+        }, true);
+      })();
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="preload" as="image" href="/Hero.jpg" fetchpriority="high" />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,700;1,9..40,400&family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,400&display=swap" rel="stylesheet" />
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
+

@@ -1,0 +1,6 @@
+{
+  "name": "Slow Roast Coffee Club",
+  "description": "An email-style landing page for Slow Roast Coffee Club, a monthly coffee subscription for home brewers.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
