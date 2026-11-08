@@ -31,7 +31,12 @@ import { BrewTimer } from './components/BrewTimer.tsx';
 import { ToastContainer } from './components/Toast.tsx';
 import { ReadingProgressBar } from './components/ReadingProgressBar.tsx';
 import { RoastHistoryChart } from './components/RoastHistoryChart.tsx';
+import { RoastComparisonTable } from './components/RoastComparisonTable.tsx';
+import { RoastType } from './utils/roastComparison.ts';
 import { WorldOriginMap } from './components/WorldOriginMap.tsx';
+import { RecentBrews } from './components/RecentBrews.tsx';
+import { RecentBrew } from './utils/recentBrews.ts';
+import { TestimonialBlock } from './components/TestimonialBlock.tsx';
 import { RoastLevel, BrewMethod } from './utils/coffeePlan.ts';
 import { calculateScrollProgress } from './utils/scrollProgress.ts';
 import {
@@ -70,6 +75,21 @@ export default function App() {
       'Action Confirmed',
       contextMsg || 'First box reserved! Free shipping promo applied ($5 saved).',
       'success'
+    );
+    setIsGetStartedModalOpen(true);
+  };
+
+  const handleSelectRoastProfile = (roastKey: RoastType) => {
+    setCustomRoast(roastKey);
+    const descriptors: Record<RoastType, string> = {
+      light: 'Light Roast (Floral, Meyer Lemon & Peach)',
+      medium: 'Medium Roast (Caramel, Milk Chocolate & Apple)',
+      dark: 'Dark Roast (Rich Cocoa Nibs, Molasses & Crema)',
+    };
+    showToast(
+      `${roastKey.charAt(0).toUpperCase() + roastKey.slice(1)} Roast Selected`,
+      `Preference set to ${descriptors[roastKey]}. Tap to finalize your box.`,
+      'info'
     );
     setIsGetStartedModalOpen(true);
   };
@@ -413,31 +433,27 @@ export default function App() {
         {/* DIVIDER */}
         <Divider />
 
+        {/* SECTION 4.75: RECENT BREWS */}
+        <AnimatedSection className="px-6 sm:px-10 py-6">
+          <FadeIn delay={60}>
+            <RecentBrews
+              onRateCoffee={(brew: RecentBrew, rating: number, feedback: string) => {
+                showToast(
+                  `${brew.name} Rated (${rating}★)`,
+                  feedback,
+                  'success'
+                );
+              }}
+            />
+          </FadeIn>
+        </AnimatedSection>
+
+        {/* DIVIDER */}
+        <Divider />
+
         {/* SECTION 5: TESTIMONIAL */}
         <AnimatedSection className="px-6 sm:px-10 py-8">
-          <FadeIn delay={60}>
-            <div className="rounded-2xl bg-[#F1E8D8] p-8 border border-[#DDD2BF]/50 relative shadow-xs">
-              {/* Large decorative Fraunces quotation mark in terracotta */}
-              <div
-                className="text-6xl sm:text-7xl font-serif text-[#D9633B] leading-none select-none mb-1 opacity-90"
-                style={{ fontFamily: "'Fraunces', serif" }}
-                aria-hidden="true"
-              >
-                “
-              </div>
-
-              <blockquote
-                className="text-[22px] sm:text-[24px] italic leading-snug text-[#2B2B28] font-normal mb-5 -mt-3"
-                style={{ fontFamily: "'Fraunces', serif" }}
-              >
-                I went from bitter grocery store coffee to brewing sweet, balanced pour overs in three weeks. The monthly guides make all the difference.
-              </blockquote>
-
-              <div className="text-sm font-medium text-[#6F6A60] tracking-wide">
-                <span className="text-[#2B2B28] font-bold">Amara</span>, home brewer
-              </div>
-            </div>
-          </FadeIn>
+          <TestimonialBlock />
         </AnimatedSection>
 
         {/* DIVIDER */}
@@ -448,6 +464,19 @@ export default function App() {
           <FadeIn delay={60}>
             <RoastHistoryChart
               onAdjustPreferences={() => setIsGetStartedModalOpen(true)}
+            />
+          </FadeIn>
+        </AnimatedSection>
+
+        {/* DIVIDER */}
+        <Divider />
+
+        {/* SECTION 5.35: ROAST PROFILES COMPARISON TABLE */}
+        <AnimatedSection className="px-6 sm:px-10 py-4">
+          <FadeIn delay={60}>
+            <RoastComparisonTable
+              selectedRoast={customRoast}
+              onSelectRoast={handleSelectRoastProfile}
             />
           </FadeIn>
         </AnimatedSection>
