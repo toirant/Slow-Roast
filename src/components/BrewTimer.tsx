@@ -145,7 +145,7 @@ export function BrewTimer({ onJoinClick, initialMethodId = 'pour-over' }: BrewTi
   };
 
   return (
-    <section aria-labelledby="brew-timer-heading" className="w-full">
+    <section id="brew-timer-section" aria-labelledby="brew-timer-heading" className="w-full">
       {/* Header */}
       <div className="text-center mb-6 px-2">
         <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#24493A]/10 text-[#24493A] text-xs font-semibold tracking-wider uppercase mb-3">

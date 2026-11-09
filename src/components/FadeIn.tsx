@@ -1,5 +1,9 @@
+/**
+ * @license
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 import React from 'react';
-import { useInView } from '../hooks/useInView.ts';
 
 interface FadeInProps extends React.HTMLAttributes<HTMLDivElement> {
   children: React.ReactNode;
@@ -14,35 +18,17 @@ export const FadeIn: React.FC<FadeInProps> = ({
   className = '',
   delay = 0,
   duration = '700',
-  direction = 'up',
+  direction = 'none',
   style,
   ...props
 }) => {
-  const { ref, isInView } = useInView<HTMLDivElement>({
-    threshold: 0.1,
-    rootMargin: '0px 0px -25px 0px',
-    triggerOnce: true,
-  });
-
-  const durationClass =
-    duration === '500'
-      ? 'duration-500'
-      : duration === '1000'
-      ? 'duration-1000'
-      : 'duration-700';
-
-  const transformInitial = direction === 'up' ? 'translate-y-5' : '';
-
+  // Ensure all content is immediately visible without hiding behind scroll triggers
   return (
     <div
-      ref={ref}
       style={{
         ...style,
-        transitionDelay: delay ? `${delay}ms` : style?.transitionDelay,
       }}
-      className={`transition-all ${durationClass} ease-out will-change-[opacity,transform] ${
-        isInView ? 'opacity-100 translate-y-0' : `opacity-0 ${transformInitial}`
-      } ${className}`}
+      className={`opacity-100 transition-opacity motion-reduce:transition-none ${className}`}
       {...props}
     >
       {children}

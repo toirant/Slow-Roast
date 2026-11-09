@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   Coffee,
   Package,
@@ -14,54 +14,43 @@ import {
   Twitter,
   Youtube,
   Mail,
+  Truck,
+  Calendar,
+  Sparkles,
+  ArrowRight,
+  ShieldCheck,
+  CheckCircle2,
 } from 'lucide-react';
-import { PrimaryButton } from './components/PrimaryButton.tsx';
-import { OutlineButton } from './components/OutlineButton.tsx';
-import { Divider } from './components/Divider.tsx';
-import { FeatureCard } from './components/FeatureCard.tsx';
+import { CartProvider, useCart, PolicyType } from './context/CartContext.tsx';
+import { ModeBanner } from './components/ModeBanner.tsx';
+import { Navbar } from './components/Navbar.tsx';
+import { SubscriptionOffer } from './components/SubscriptionOffer.tsx';
+import { ProductShop } from './components/ProductShop.tsx';
 import { MediaFrame } from './components/MediaFrame.tsx';
-import { AnimatedSection } from './components/AnimatedSection.tsx';
-import { FadeIn } from './components/FadeIn.tsx';
-import { RoastQuiz } from './components/RoastQuiz.tsx';
-import { StickyJoinBar } from './components/StickyJoinBar.tsx';
-import { SampleBoxModal } from './components/SampleBoxModal.tsx';
-import { GetStartedModal } from './components/GetStartedModal.tsx';
-import { FAQSection } from './components/FAQSection.tsx';
-import { BrewTimer } from './components/BrewTimer.tsx';
-import { ToastContainer } from './components/Toast.tsx';
-import { ReadingProgressBar } from './components/ReadingProgressBar.tsx';
-import { RoastHistoryChart } from './components/RoastHistoryChart.tsx';
-import { RoastComparisonTable } from './components/RoastComparisonTable.tsx';
-import { RoastType } from './utils/roastComparison.ts';
 import { WorldOriginMap } from './components/WorldOriginMap.tsx';
+import { RoastQuiz } from './components/RoastQuiz.tsx';
+import { BrewingSchool } from './components/BrewingSchool.tsx';
+import { BrewTimer } from './components/BrewTimer.tsx';
+import { RoastComparisonTable } from './components/RoastComparisonTable.tsx';
 import { RecentBrews } from './components/RecentBrews.tsx';
-import { RecentBrew } from './utils/recentBrews.ts';
-import { TestimonialBlock } from './components/TestimonialBlock.tsx';
+import { FAQSection } from './components/FAQSection.tsx';
+import { CartDrawer } from './components/CartDrawer.tsx';
+import { CheckoutModal } from './components/CheckoutModal.tsx';
+import { CustomerPortalModal } from './components/CustomerPortalModal.tsx';
+import { OwnerPortalModal } from './components/OwnerPortalModal.tsx';
+import { PolicyModal } from './components/PolicyModal.tsx';
+import { ToastContainer } from './components/Toast.tsx';
+import { ROASTER_CONFIG } from './config/roasterConfig.ts';
+import { ToastItem, ToastVariant, createToast, addToast, removeToast } from './utils/toast.ts';
 import { RoastLevel, BrewMethod } from './utils/coffeePlan.ts';
-import { calculateScrollProgress } from './utils/scrollProgress.ts';
-import {
-  ToastItem,
-  ToastVariant,
-  createToast,
-  addToast,
-  removeToast,
-} from './utils/toast.ts';
+import { RoastType } from './utils/roastComparison.ts';
 
-export default function App() {
-  const [isSampleModalOpen, setIsSampleModalOpen] = useState(false);
-  const [isGetStartedModalOpen, setIsGetStartedModalOpen] = useState(false);
-  const [customRoast, setCustomRoast] = useState<RoastLevel>('medium');
-  const [customMethod, setCustomMethod] = useState<BrewMethod>('pour over');
-  const [showStickyJoin, setShowStickyJoin] = useState(false);
-  const [readingProgress, setReadingProgress] = useState<number>(0);
+function MainAppContent() {
+  const { addItem, openCheckout, openPolicy, confirmedOrder } = useCart();
   const [toasts, setToasts] = useState<ToastItem[]>([]);
-  const heroRef = useRef<HTMLDivElement>(null);
+  const [isCustomerPortalOpen, setIsCustomerPortalOpen] = useState(false);
 
-  const showToast = (
-    title: string,
-    message: string,
-    variant: ToastVariant = 'success'
-  ) => {
+  const showToast = (title: string, message: string, variant: ToastVariant = 'success') => {
     const newToast = createToast(title, message, variant);
     setToasts((prev) => addToast(prev, newToast));
   };
@@ -70,574 +59,536 @@ export default function App() {
     setToasts((prev) => removeToast(prev, id));
   };
 
-  const handleJoinTheClub = (contextMsg?: string) => {
-    showToast(
-      'Action Confirmed',
-      contextMsg || 'First box reserved! Free shipping promo applied ($5 saved).',
-      'success'
-    );
-    setIsGetStartedModalOpen(true);
+  const handleHeroSubscribe = () => {
+    const subProduct = ROASTER_CONFIG.products[0];
+    addItem(subProduct, {
+      bagWeight: '12oz',
+      grind: 'Whole Bean',
+      frequency: '4-weeks',
+      isSubscription: true,
+    });
+    openCheckout();
   };
 
-  const handleSelectRoastProfile = (roastKey: RoastType) => {
-    setCustomRoast(roastKey);
-    const descriptors: Record<RoastType, string> = {
-      light: 'Light Roast (Floral, Meyer Lemon & Peach)',
-      medium: 'Medium Roast (Caramel, Milk Chocolate & Apple)',
-      dark: 'Dark Roast (Rich Cocoa Nibs, Molasses & Crema)',
+  const handleQuizRecommendation = (roast: RoastLevel, method: BrewMethod) => {
+    // Map quiz recommendation to matching subscription
+    const matchedProduct =
+      roast === 'light'
+        ? ROASTER_CONFIG.products[1]
+        : roast === 'dark'
+        ? ROASTER_CONFIG.products[2]
+        : ROASTER_CONFIG.products[0];
+
+    const grindMap: Record<BrewMethod, string> = {
+      'pour over': 'Pour Over / V60 / Chemex',
+      'french press': 'French Press / Immersion / Cold Brew',
+      espresso: 'AeroPress / Moka Pot',
     };
+
+    addItem(matchedProduct, {
+      bagWeight: '12oz',
+      grind: grindMap[method] || 'Whole Bean',
+      frequency: '4-weeks',
+      isSubscription: true,
+    });
+
     showToast(
-      `${roastKey.charAt(0).toUpperCase() + roastKey.slice(1)} Roast Selected`,
-      `Preference set to ${descriptors[roastKey]}. Tap to finalize your box.`,
+      'Roast Matched & Added to Cart',
+      `${matchedProduct.title} configured with ${grindMap[method]}. Opening checkout.`,
+      'coffee'
+    );
+
+    openCheckout();
+  };
+
+  const handleRoastProfileSelect = (roastKey: RoastType) => {
+    const matchedProduct =
+      roastKey === 'light'
+        ? ROASTER_CONFIG.products[1]
+        : roastKey === 'dark'
+        ? ROASTER_CONFIG.products[2]
+        : ROASTER_CONFIG.products[0];
+
+    addItem(matchedProduct, {
+      bagWeight: '12oz',
+      grind: 'Whole Bean',
+      frequency: '4-weeks',
+      isSubscription: true,
+    });
+
+    showToast(
+      `${roastKey.toUpperCase()} Profile Selected`,
+      `Added ${matchedProduct.title} to your cart. Opening checkout.`,
       'info'
     );
-    setIsGetStartedModalOpen(true);
+
+    openCheckout();
   };
 
-  useEffect(() => {
-    const handleScroll = () => {
-      // 1. Reading progress calculation
-      const docHeight = document.documentElement.scrollHeight || document.body.scrollHeight;
-      const clientHeight = window.innerHeight;
-      const scrollTop = window.scrollY || document.documentElement.scrollTop;
-      const progress = calculateScrollProgress(scrollTop, docHeight, clientHeight);
-      setReadingProgress(progress);
-
-      // 2. Sticky Join bar visibility
-      if (!heroRef.current) return;
-      const heroRect = heroRef.current.getBoundingClientRect();
-      setShowStickyJoin(heroRect.bottom <= 0);
-    };
-
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    handleScroll();
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
-
-  const steps = [
-    {
-      num: 1,
-      text: 'Pick your roast level: light, medium, or dark.',
-    },
-    {
-      num: 2,
-      text: 'Tell us how you brew: pour over, French press, or espresso.',
-    },
-    {
-      num: 3,
-      text: 'Your box arrives with a guide matched to your method.',
-    },
-    {
-      num: 4,
-      text: 'Rate what you tried, and we tune the next box.',
-    },
-  ];
-
   return (
-    <div className="min-h-screen py-10 px-4 bg-[#EFE7DA] text-[#2B2B28] antialiased flex flex-col items-center justify-start selection:bg-[#D9633B]/20 selection:text-[#2B2B28]">
-      {/* Email Container Card */}
-      <main className="w-full max-w-[600px] mx-auto rounded-2xl overflow-hidden shadow-xl ring-1 ring-black/5 bg-[#FBF7F0] relative">
-        {/* Subtle Reading Progress Bar at the top of the main container */}
-        <ReadingProgressBar progress={readingProgress} />
+    <div className="min-h-screen bg-[#FBF7F0] text-[#2B2B28] antialiased flex flex-col selection:bg-[#D9633B]/20 selection:text-[#2B2B28]">
+      {/* Top Banner indicating Demo vs Live Mode */}
+      <ModeBanner />
 
-        {/* SECTION 1: HERO */}
-        <div ref={heroRef} id="hero-section">
-          <AnimatedSection className="px-6 sm:px-10 pt-8 sm:pt-10 pb-6">
-            {/* Top Bar */}
-            <div className="flex items-center justify-between border-b border-[#DDD2BF]/50 pb-4 mb-7">
-              <span
-                className="text-xl sm:text-2xl font-semibold tracking-tight text-[#24493A]"
-                style={{ fontFamily: "'Fraunces', serif" }}
-              >
-                Slow Roast
-              </span>
-              <span className="text-xs sm:text-sm font-medium text-[#6F6A60] tracking-wide">
-                Issue 04, November
-              </span>
-            </div>
+      {/* Main Responsive Header */}
+      <Navbar />
 
-            {/* Headline */}
-            <FadeIn delay={60}>
-              <h1
-                className="text-4xl sm:text-[52px] leading-[1.05] tracking-tight font-semibold text-[#2B2B28] text-left mb-4"
-                style={{ fontFamily: "'Fraunces', serif" }}
-              >
-                Brew a <span className="italic text-[#D9633B]">better morning</span>, one bag at a time
-              </h1>
-            </FadeIn>
+      <main className="flex-1 w-full">
+        {/* HERO SECTION: Responsive 2-Column Desktop Grid */}
+        <section
+          id="hero-section"
+          aria-labelledby="hero-heading"
+          className="relative bg-linear-to-b from-[#FBF7F0] to-[#EFE7DA]/40 pt-10 pb-16 sm:pt-16 sm:pb-24 border-b border-[#DDD2BF]"
+        >
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+              {/* Left Column: Editorial Value Proposition */}
+              <div className="lg:col-span-7 space-y-6 text-left">
+                <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#24493A]/10 text-[#24493A] text-xs font-bold tracking-wider uppercase">
+                  <Coffee className="w-3.5 h-3.5 text-[#D9633B]" />
+                  <span>{ROASTER_CONFIG.business.badgeText}</span>
+                  <span className="text-[#6F6A60]">·</span>
+                  <span className="text-[#6F6A60]">{ROASTER_CONFIG.business.roastDays}</span>
+                </div>
 
-            {/* Short supporting sentence */}
-            <FadeIn delay={120}>
-              <p className="text-[17px] leading-relaxed text-[#6F6A60] text-left mb-6">
-                Small-batch, single-origin coffees from independent farms delivered to your door with gentle technique guides.
-              </p>
-            </FadeIn>
+                <h1
+                  id="hero-heading"
+                  className="text-4xl sm:text-6xl font-semibold tracking-tight text-[#2B2B28] leading-[1.08]"
+                  style={{ fontFamily: "'Fraunces', serif" }}
+                >
+                  Brew a <span className="italic text-[#D9633B]">better morning</span>, one fresh roast at a time.
+                </h1>
 
-            {/* Primary CTA */}
-            <FadeIn delay={180} className="mb-8">
-              <PrimaryButton
-                onClick={() => handleJoinTheClub('First box reserved! Free shipping promo applied.')}
-                aria-label="Start my first box"
-              >
-                Start my first box
-              </PrimaryButton>
-            </FadeIn>
+                <p className="text-lg sm:text-xl leading-relaxed text-[#6F6A60] max-w-2xl">
+                  Small-batch, single-origin coffees from independent farms delivered to your door with
+                  clear, jargon-free technique guides. Taste the difference of fresh-roasted beans.
+                </p>
 
-            {/* Hero Media: 4/3 ratio with video and image poster */}
-            <FadeIn delay={240}>
-              <MediaFrame
-                aspectRatio="4/3"
-                imageSrc="/Hero.jpg"
-                videoSrc="/Hero.mp4"
-                altText="Barista pouring steamed milk into coffee at an espresso bar"
-                isHero={true}
-                fallbackVariant="hero"
-                badge={
-                  <div className="inline-flex items-center gap-2 bg-[#FBF7F0]/95 backdrop-blur-xs text-[#24493A] text-xs font-semibold px-3 py-1.5 rounded-full shadow-md border border-[#DDD2BF]/70">
-                    <Coffee className="w-3.5 h-3.5 text-[#D9633B]" />
-                    <span>Fresh roasted every Monday</span>
+                {/* Primary & Secondary Action Buttons */}
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3.5 pt-2">
+                  <button
+                    type="button"
+                    onClick={handleHeroSubscribe}
+                    className="py-4 px-8 rounded-2xl bg-[#24493A] hover:bg-[#1B372C] text-white font-bold text-base shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer focus-visible:ring-2 focus-visible:ring-[#24493A]"
+                  >
+                    <span>Start My Subscription</span>
+                    <ArrowRight className="w-4 h-4 text-[#E69A3B]" />
+                  </button>
+
+                  <a
+                    href="#shop-section"
+                    className="py-4 px-6 rounded-2xl border-2 border-[#24493A] text-[#24493A] hover:bg-[#24493A]/5 font-bold text-base text-center transition-colors cursor-pointer"
+                  >
+                    Browse Single Bags
+                  </a>
+                </div>
+
+                {/* Verified Operational Commitments (No fake metrics) */}
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-6 border-t border-[#DDD2BF]/80">
+                  <div className="flex items-start gap-2.5">
+                    <Truck className="w-4 h-4 text-[#D9633B] shrink-0 mt-0.5" />
+                    <div className="text-xs">
+                      <strong className="block text-[#2B2B28]">Dispatched Tuesdays</strong>
+                      <span className="text-[#6F6A60]">Expedited 2–3 day shipping</span>
+                    </div>
                   </div>
-                }
-              />
-            </FadeIn>
-          </AnimatedSection>
-        </div>
 
-        {/* SECTION 2: INTRO */}
-        <AnimatedSection className="px-6 sm:px-10 pt-8 pb-4">
-          <FadeIn delay={40}>
-            <p className="text-[17px] leading-relaxed text-[#2B2B28] text-left mb-8">
-              Every month we send two small-batch coffees from independent farms, along with a short guide that teaches you one new brewing skill. No jargon, no expensive gear required.
-            </p>
-          </FadeIn>
+                  <div className="flex items-start gap-2.5">
+                    <Calendar className="w-4 h-4 text-[#24493A] shrink-0 mt-0.5" />
+                    <div className="text-xs">
+                      <strong className="block text-[#2B2B28]">Peak Degassing</strong>
+                      <span className="text-[#6F6A60]">Lands days 4–6 post-roast</span>
+                    </div>
+                  </div>
 
-          {/* Row of 3 stats with subtle staggered fade-in */}
-          <div className="grid grid-cols-3 gap-3 border-y border-[#DDD2BF]/60 py-5">
-            <FadeIn delay={60} className="text-center sm:text-left">
-              <div
-                className="text-2xl sm:text-3xl font-semibold text-[#24493A]"
-                style={{ fontFamily: "'Fraunces', serif" }}
-              >
-                40+
+                  <div className="flex items-start gap-2.5">
+                    <ShieldCheck className="w-4 h-4 text-[#24493A] shrink-0 mt-0.5" />
+                    <div className="text-xs">
+                      <strong className="block text-[#2B2B28]">1-Click Flexibility</strong>
+                      <span className="text-[#6F6A60]">Skip, pause, or cancel anytime</span>
+                    </div>
+                  </div>
+                </div>
               </div>
-              <div className="text-xs sm:text-sm text-[#6F6A60] font-medium mt-0.5">
-                farms
+
+              {/* Right Column: Hero Visual Media */}
+              <div className="lg:col-span-5">
+                <div className="relative rounded-3xl overflow-hidden border border-[#DDD2BF] shadow-xl bg-white p-3">
+                  <MediaFrame
+                    aspectRatio="4/3"
+                    imageSrc="/Hero.jpg"
+                    videoSrc="/Hero.mp4"
+                    altText="Barista pouring steamed milk into coffee at an espresso bar"
+                    isHero={true}
+                    fallbackVariant="hero"
+                    badge={
+                      <div className="inline-flex items-center gap-2 bg-[#FBF7F0]/95 backdrop-blur-xs text-[#24493A] text-xs font-semibold px-3 py-1.5 rounded-full shadow-md border border-[#DDD2BF]/70">
+                        <Coffee className="w-3.5 h-3.5 text-[#D9633B]" />
+                        <span>Mondays: Fresh Roast Day</span>
+                      </div>
+                    }
+                  />
+
+                  {/* Customer Portal Quick Link if user has an active order */}
+                  {confirmedOrder && (
+                    <div className="mt-3 p-3 rounded-2xl bg-emerald-50 border border-emerald-200 flex items-center justify-between text-xs">
+                      <span className="text-emerald-900 font-medium">
+                        Active Order: <strong>{confirmedOrder.orderId}</strong>
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => setIsCustomerPortalOpen(true)}
+                        className="text-[#24493A] font-bold underline hover:text-[#183127] cursor-pointer"
+                      >
+                        Manage Subscription
+                      </button>
+                    </div>
+                  )}
+                </div>
               </div>
-            </FadeIn>
-            <FadeIn delay={140} className="text-center sm:text-left border-x border-[#DDD2BF]/60 px-2 sm:px-4">
-              <div
-                className="text-2xl sm:text-3xl font-semibold text-[#24493A]"
-                style={{ fontFamily: "'Fraunces', serif" }}
-              >
-                12
-              </div>
-              <div className="text-xs sm:text-sm text-[#6F6A60] font-medium mt-0.5">
-                brew guides
-              </div>
-            </FadeIn>
-            <FadeIn delay={220} className="text-center sm:text-left pl-2">
-              <div
-                className="text-2xl sm:text-3xl font-semibold text-[#24493A]"
-                style={{ fontFamily: "'Fraunces', serif" }}
-              >
-                4.9
-              </div>
-              <div className="text-xs sm:text-sm text-[#6F6A60] font-medium mt-0.5">
-                average rating
-              </div>
-            </FadeIn>
+            </div>
           </div>
-        </AnimatedSection>
+        </section>
 
-        {/* DIVIDER */}
-        <Divider />
+        {/* SECTION: SUBSCRIPTIONS CONFIGURATOR & PLANS */}
+        <SubscriptionOffer />
 
-        {/* SECTION 3: WHAT LANDS IN YOUR BOX */}
-        <AnimatedSection className="px-6 sm:px-10">
-          <FadeIn delay={40}>
-            <h2
-              className="text-3xl sm:text-[40px] leading-tight font-semibold text-[#2B2B28] text-center mb-8"
-              style={{ fontFamily: "'Fraunces', serif" }}
-            >
-              What lands in your box
-            </h2>
-          </FadeIn>
+        {/* SECTION: PRODUCT SHOP (Catalog of Single Bags & Subscriptions) */}
+        <ProductShop />
 
-          {/* Box section image: 3/2 ratio above feature cards */}
-          <FadeIn delay={100} className="mb-8">
-            <MediaFrame
-              aspectRatio="3/2"
-              imageSrc="/Box.jpg"
-              altText="Artisan bowl of freshly roasted dark coffee beans on a wooden surface"
-              fallbackVariant="box"
-            />
-          </FadeIn>
-
-          {/* 2x2 grid with staggered fade-in */}
-          <div className="grid grid-cols-1 min-[480px]:grid-cols-2 gap-4 mb-8">
-            <FadeIn delay={120}>
-              <FeatureCard
-                icon={Package}
-                title="Two fresh bags"
-                description="Roasted days before shipping."
-              />
-            </FadeIn>
-            <FadeIn delay={200}>
-              <FeatureCard
-                icon={BookOpen}
-                title="One brew guide"
-                description="A new technique every month."
-              />
-            </FadeIn>
-            <FadeIn delay={280}>
-              <FeatureCard
-                icon={Map}
-                title="Farm story card"
-                description="Know who grew your coffee."
-              />
-            </FadeIn>
-            <FadeIn delay={360}>
-              <FeatureCard
-                icon={Repeat}
-                title="Skip or pause"
-                description="Change your plan any time."
-              />
-            </FadeIn>
-          </div>
-
-          {/* Centered Outline Button */}
-          <FadeIn delay={200} className="text-center">
-            <OutlineButton
-              onClick={() => setIsSampleModalOpen(true)}
-              aria-label="See a sample box"
-            >
-              See a sample box
-            </OutlineButton>
-          </FadeIn>
-        </AnimatedSection>
-
-        {/* DIVIDER */}
-        <Divider />
-
-        {/* SECTION 3.5: GLOBAL ORIGIN MAP (LAST 3 MONTHS) */}
-        <AnimatedSection className="px-6 sm:px-10 py-6">
-          <FadeIn delay={60}>
+        {/* SECTION: SOURCING ORIGINS (Map + Accessible List Alternative) */}
+        <section
+          id="origins-section"
+          aria-labelledby="origins-heading"
+          className="py-16 sm:py-24 bg-[#FBF7F0] border-t border-[#DDD2BF]"
+        >
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <WorldOriginMap
               onSelectOrigin={(origin) => {
-                const roast: RoastLevel =
-                  origin.roastProfile === 'Light'
-                    ? 'light'
-                    : origin.roastProfile === 'Medium'
-                    ? 'medium'
-                    : 'dark';
-                setCustomRoast(roast);
                 showToast(
                   `${origin.country} Selected`,
-                  `Preference set to ${origin.roastProfile} Roast (${origin.region}).`,
-                  'info'
+                  `Your next club box will feature micro-lots from ${origin.region}.`,
+                  'coffee'
                 );
-                setIsGetStartedModalOpen(true);
               }}
             />
-          </FadeIn>
-        </AnimatedSection>
-
-        {/* DIVIDER */}
-        <Divider />
+          </div>
+        </section>
 
         {/* SECTION: ROAST MATCHER QUIZ */}
-        <AnimatedSection className="px-6 sm:px-10">
-          <FadeIn delay={60}>
-            <RoastQuiz
-              onSelectRoastAndMethod={(roast, method) => {
-                setCustomRoast(roast);
-                setCustomMethod(method);
-                setIsGetStartedModalOpen(true);
-              }}
-            />
-          </FadeIn>
-        </AnimatedSection>
-
-        {/* DIVIDER */}
-        <Divider />
-
-        {/* SECTION 4: YOUR FIRST MONTH, STEP BY STEP */}
-        <AnimatedSection className="px-6 sm:px-10">
-          <FadeIn delay={40}>
-            <h2
-              className="text-3xl sm:text-[40px] leading-tight font-semibold text-[#2B2B28] text-left mb-8"
-              style={{ fontFamily: "'Fraunces', serif" }}
-            >
-              Your first month, step by step
-            </h2>
-          </FadeIn>
-
-          {/* Vertical Timeline with sequential step fade-in */}
-          <div className="relative pl-8 sm:pl-9 mb-8 space-y-6 sm:space-y-7">
-            {/* 2px vertical line in border color */}
-            <div
-              className="absolute left-[13px] top-2 bottom-3 w-[2px] bg-[#DDD2BF]"
-              aria-hidden="true"
-            />
-
-            {steps.map((step, idx) => (
-              <FadeIn
-                key={step.num}
-                delay={80 + idx * 90}
-                className="relative flex items-start group"
+        <section
+          id="roast-quiz-section"
+          aria-labelledby="quiz-heading"
+          className="py-16 sm:py-24 bg-[#EFE7DA]/40 border-t border-[#DDD2BF]"
+        >
+          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center mb-10">
+              <span className="text-xs font-bold uppercase tracking-wider text-[#D9633B] block mb-2">
+                Personalized Coffee Matching
+              </span>
+              <h2
+                id="quiz-heading"
+                className="text-3xl sm:text-4xl font-semibold text-[#2B2B28] tracking-tight"
+                style={{ fontFamily: "'Fraunces', serif" }}
               >
-                {/* Small circular marker per step: primary green fill, white number */}
-                <div
-                  className="absolute -left-8 sm:-left-9 w-7 h-7 rounded-full bg-[#24493A] text-white text-xs font-bold flex items-center justify-center shrink-0 ring-4 ring-[#FBF7F0] shadow-xs"
-                  aria-hidden="true"
-                >
-                  {step.num}
-                </div>
-                <p className="text-[15px] sm:text-[16px] leading-snug text-[#2B2B28] pt-0.5 font-medium">
-                  {step.text}
-                </p>
-              </FadeIn>
-            ))}
+                Find your perfect roast profile
+              </h2>
+              <p className="text-sm sm:text-base text-[#6F6A60] mt-1">
+                Answer 4 quick questions about your brewing setup and taste desires. We will pair your box with a roast and guide.
+              </p>
+            </div>
+
+            <RoastQuiz onSelectRoastAndMethod={handleQuizRecommendation} />
           </div>
+        </section>
 
-          {/* Timeline Image: 16/9 frame below timeline steps */}
-          <FadeIn delay={150}>
-            <MediaFrame
-              aspectRatio="16/9"
-              imageSrc="/Brew-steps.jpg"
-              altText="Steaming freshly brewed coffee pouring from a stovetop moka pot into a dark ceramic cup"
-              fallbackVariant="timeline"
-            />
-          </FadeIn>
-        </AnimatedSection>
-
-        {/* DIVIDER */}
-        <Divider />
-
-        {/* SECTION 4.5: INTERACTIVE BREW TIMER */}
-        <AnimatedSection className="px-6 sm:px-10 py-4">
-          <FadeIn delay={60}>
-            <BrewTimer
-              onJoinClick={() => handleJoinTheClub('Custom brew profile selected — free shipping applied!')}
-              initialMethodId={
-                customMethod === 'espresso'
-                  ? 'moka-pot'
-                  : customMethod === 'french press'
-                  ? 'french-press'
-                  : 'pour-over'
-              }
-            />
-          </FadeIn>
-        </AnimatedSection>
-
-        {/* DIVIDER */}
-        <Divider />
-
-        {/* SECTION 4.75: RECENT BREWS */}
-        <AnimatedSection className="px-6 sm:px-10 py-6">
-          <FadeIn delay={60}>
-            <RecentBrews
-              onRateCoffee={(brew: RecentBrew, rating: number, feedback: string) => {
+        {/* SECTION: BREWING SCHOOL (Pour Over, French Press, AeroPress) */}
+        <section
+          id="brewing-school-section"
+          aria-labelledby="brewing-school-heading"
+          className="py-16 sm:py-24 bg-[#FBF7F0] border-t border-[#DDD2BF]"
+        >
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <BrewingSchool
+              onPracticeWithTimer={(methodId) => {
+                const element = document.querySelector('#brew-timer-section');
+                if (element) {
+                  element.scrollIntoView({ behavior: 'smooth' });
+                }
                 showToast(
-                  `${brew.name} Rated (${rating}★)`,
-                  feedback,
-                  'success'
+                  'Timer Activated',
+                  `Live timer calibrated for ${methodId.replace('-', ' ')}. Tap Start to begin.`,
+                  'info'
+                );
+              }}
+              onSelectMethodForBox={(methodId) => {
+                showToast(
+                  'Brew Method Saved',
+                  `Your box profile has been configured for ${methodId.replace('-', ' ')} extraction.`,
+                  'coffee'
                 );
               }}
             />
-          </FadeIn>
-        </AnimatedSection>
+          </div>
+        </section>
 
-        {/* DIVIDER */}
-        <Divider />
+        {/* SECTION: BUILT-IN BREW TIMER */}
+        <section
+          id="brew-timer-section"
+          aria-labelledby="timer-heading"
+          className="py-16 sm:py-24 bg-[#EFE7DA]/50 border-t border-[#DDD2BF]"
+        >
+          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+            <BrewTimer onJoinClick={handleHeroSubscribe} />
+          </div>
+        </section>
 
-        {/* SECTION 5: TESTIMONIAL */}
-        <AnimatedSection className="px-6 sm:px-10 py-8">
-          <TestimonialBlock />
-        </AnimatedSection>
+        {/* SECTION: ROAST COMPARISON TABLE */}
+        <section
+          id="roast-comparison-section"
+          aria-labelledby="comparison-heading"
+          className="py-16 sm:py-24 bg-[#FBF7F0] border-t border-[#DDD2BF]"
+        >
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <RoastComparisonTable onSelectRoast={handleRoastProfileSelect} />
+          </div>
+        </section>
 
-        {/* DIVIDER */}
-        <Divider />
-
-        {/* SECTION 5.25: MEMBER LIFETIME ROAST VISUALIZATION */}
-        <AnimatedSection className="px-6 sm:px-10 py-4">
-          <FadeIn delay={60}>
-            <RoastHistoryChart
-              onAdjustPreferences={() => setIsGetStartedModalOpen(true)}
+        {/* SECTION: RECENT BREWS (Filtered rating history) */}
+        <section
+          id="recent-brews-section"
+          aria-labelledby="recent-brews-heading"
+          className="py-16 sm:py-24 bg-[#EFE7DA]/40 border-t border-[#DDD2BF]"
+        >
+          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+            <RecentBrews
+              onRateCoffee={(brew, rating, feedback) => {
+                showToast(
+                  `${brew.name} Rated ${rating}/5 Stars`,
+                  feedback,
+                  'coffee'
+                );
+              }}
             />
-          </FadeIn>
-        </AnimatedSection>
-
-        {/* DIVIDER */}
-        <Divider />
-
-        {/* SECTION 5.35: ROAST PROFILES COMPARISON TABLE */}
-        <AnimatedSection className="px-6 sm:px-10 py-4">
-          <FadeIn delay={60}>
-            <RoastComparisonTable
-              selectedRoast={customRoast}
-              onSelectRoast={handleSelectRoastProfile}
-            />
-          </FadeIn>
-        </AnimatedSection>
-
-        {/* Divider before FAQ */}
-        <Divider />
-
-        {/* SECTION 5.5: FREQUENTLY ASKED QUESTIONS */}
-        <AnimatedSection className="px-6 sm:px-10 py-6">
-          <FadeIn delay={60}>
-            <FAQSection onJoinClick={() => handleJoinTheClub('First box reserved! Free shipping promo applied.')} />
-          </FadeIn>
-        </AnimatedSection>
-
-        {/* Divider before Final CTA */}
-        <Divider />
-
-        {/* SECTION 6: FINAL CTA */}
-        <AnimatedSection className="px-6 sm:px-10 pb-10">
-          <FadeIn delay={60}>
-            <div className="w-full rounded-2xl bg-[#24493A] p-8 sm:p-10 text-center shadow-md relative overflow-hidden">
-              {/* Subtle atmospheric glow */}
-              <div className="absolute -top-12 -right-12 w-48 h-48 rounded-full bg-white/5 blur-xl pointer-events-none" />
-
-              <h2
-                className="text-3xl sm:text-[44px] leading-tight font-semibold text-white mb-3"
-                style={{ fontFamily: "'Fraunces', serif" }}
-              >
-                Your next cup starts here
-              </h2>
-
-              <p className="text-[17px] leading-relaxed text-[#F1E8D8] max-w-md mx-auto mb-7">
-                Join the club today and get free shipping on your first box.
-              </p>
-
-              <div>
-                <PrimaryButton
-                  onClick={() => handleJoinTheClub('First box reserved! Free shipping promo applied ($5 saved).')}
-                  aria-label="Join the club"
-                >
-                  Join the club
-                </PrimaryButton>
-              </div>
-            </div>
-          </FadeIn>
-        </AnimatedSection>
-
-        {/* FOOTER */}
-        <footer className="bg-[#1F2A24] text-white p-8 sm:p-10 text-center">
-          {/* Wordmark */}
-          <div className="mb-2">
-            <span
-              className="text-[28px] font-semibold tracking-tight transition-colors duration-200 hover:text-[#D9633B] cursor-default inline-block"
-              style={{ fontFamily: "'Fraunces', serif" }}
-            >
-              Slow Roast
-            </span>
           </div>
+        </section>
 
-          {/* Short tagline in muted light text */}
-          <p className="text-xs sm:text-sm text-white/70 max-w-xs mx-auto mb-6">
-            Cultivating mindful home coffee rituals, roast by roast.
-          </p>
-
-          {/* Four circular social icon buttons with 1px white/20 border */}
-          <div className="flex items-center justify-center gap-3 mb-7">
-            <button
-              aria-label="Instagram"
-              className="w-9 h-9 rounded-full border border-white/20 flex items-center justify-center text-white/90 hover:bg-white hover:text-[#1F2A24] transition-all duration-200 cursor-pointer"
-            >
-              <Instagram className="w-4 h-4" />
-            </button>
-            <button
-              aria-label="Twitter"
-              className="w-9 h-9 rounded-full border border-white/20 flex items-center justify-center text-white/90 hover:bg-white hover:text-[#1F2A24] transition-all duration-200 cursor-pointer"
-            >
-              <Twitter className="w-4 h-4" />
-            </button>
-            <button
-              aria-label="Youtube"
-              className="w-9 h-9 rounded-full border border-white/20 flex items-center justify-center text-white/90 hover:bg-white hover:text-[#1F2A24] transition-all duration-200 cursor-pointer"
-            >
-              <Youtube className="w-4 h-4" />
-            </button>
-            <button
-              aria-label="Email Newsletter"
-              className="w-9 h-9 rounded-full border border-white/20 flex items-center justify-center text-white/90 hover:bg-white hover:text-[#1F2A24] transition-all duration-200 cursor-pointer"
-            >
-              <Mail className="w-4 h-4" />
-            </button>
+        {/* SECTION: FREQUENTLY ASKED QUESTIONS */}
+        <section
+          id="faq-section"
+          aria-labelledby="faq-heading"
+          className="py-16 sm:py-24 bg-[#FBF7F0] border-t border-[#DDD2BF]"
+        >
+          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+            <FAQSection onJoinClick={handleHeroSubscribe} />
           </div>
-
-          {/* Link row: Help, Privacy, Terms, Unsubscribe, separated by thin vertical bars */}
-          <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-xs text-white/60 mb-6 font-medium">
-            <a
-              href="#help"
-              onClick={(e) => e.preventDefault()}
-              className="hover:text-white transition-colors cursor-pointer"
-            >
-              Help
-            </a>
-            <span className="text-white/25 select-none">|</span>
-            <a
-              href="#privacy"
-              onClick={(e) => e.preventDefault()}
-              className="hover:text-white transition-colors cursor-pointer"
-            >
-              Privacy
-            </a>
-            <span className="text-white/25 select-none">|</span>
-            <a
-              href="#terms"
-              onClick={(e) => e.preventDefault()}
-              className="hover:text-white transition-colors cursor-pointer"
-            >
-              Terms
-            </a>
-            <span className="text-white/25 select-none">|</span>
-            <a
-              href="#unsubscribe"
-              onClick={(e) => e.preventDefault()}
-              className="hover:text-white transition-colors cursor-pointer"
-            >
-              Unsubscribe
-            </a>
-          </div>
-
-          {/* Copyright line */}
-          <p className="text-[11px] text-white/40 tracking-wide">
-            © 2026 Slow Roast Coffee Club. A design concept, not a real business.
-          </p>
-        </footer>
+        </section>
       </main>
 
-      {/* Sticky Bottom Join Bar: Appears only after user has scrolled past Hero */}
-      <StickyJoinBar
-        isVisible={showStickyJoin && !isGetStartedModalOpen && !isSampleModalOpen}
-        onJoin={() => handleJoinTheClub('First box reserved! Free shipping promo applied ($5 saved).')}
-      />
+      {/* COMPREHENSIVE RESPONSIVE FOOTER */}
+      <footer className="bg-[#1F2A24] text-white border-t border-[#24493A] pt-16 pb-12">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-10 pb-12 border-b border-white/10">
+            {/* Col 1 & 2: Brand Info */}
+            <div className="lg:col-span-2 space-y-4">
+              <span
+                className="text-2xl font-bold tracking-tight text-[#FBF7F0] inline-block"
+                style={{ fontFamily: "'Fraunces', serif" }}
+              >
+                {ROASTER_CONFIG.business.name}
+              </span>
+              <p className="text-xs sm:text-sm text-white/70 max-w-sm leading-relaxed">
+                {ROASTER_CONFIG.business.description}
+              </p>
+              <div className="flex items-center gap-3 pt-2">
+                <a
+                  href="#instagram"
+                  aria-label="Slow Roast Instagram"
+                  className="w-8 h-8 rounded-full border border-white/20 flex items-center justify-center text-white/80 hover:bg-white hover:text-[#1F2A24] transition-all"
+                >
+                  <Instagram className="w-4 h-4" />
+                </a>
+                <a
+                  href="#twitter"
+                  aria-label="Slow Roast Twitter"
+                  className="w-8 h-8 rounded-full border border-white/20 flex items-center justify-center text-white/80 hover:bg-white hover:text-[#1F2A24] transition-all"
+                >
+                  <Twitter className="w-4 h-4" />
+                </a>
+                <a
+                  href="#youtube"
+                  aria-label="Slow Roast YouTube"
+                  className="w-8 h-8 rounded-full border border-white/20 flex items-center justify-center text-white/80 hover:bg-white hover:text-[#1F2A24] transition-all"
+                >
+                  <Youtube className="w-4 h-4" />
+                </a>
+                <a
+                  href={`mailto:${ROASTER_CONFIG.business.contactEmail}`}
+                  aria-label="Email Roastery"
+                  className="w-8 h-8 rounded-full border border-white/20 flex items-center justify-center text-white/80 hover:bg-white hover:text-[#1F2A24] transition-all"
+                >
+                  <Mail className="w-4 h-4" />
+                </a>
+              </div>
+            </div>
 
-      {/* Interactive Modals */}
-      <SampleBoxModal
-        isOpen={isSampleModalOpen}
-        onClose={() => setIsSampleModalOpen(false)}
-      />
-      <GetStartedModal
-        isOpen={isGetStartedModalOpen}
-        onClose={() => setIsGetStartedModalOpen(false)}
-        initialRoast={customRoast}
-        initialMethod={customMethod}
-        onJoined={(roast, method) =>
-          showToast(
-            'Welcome to the Club!',
-            `Your subscription is active with ${roast} roast and ${method} guides. Roasted fresh Mondays!`,
-            'coffee'
-          )
-        }
-      />
+            {/* Col 3: Shop & Explore */}
+            <div className="space-y-3">
+              <h4 className="text-xs font-bold uppercase tracking-wider text-[#E69A3B]">
+                Shop & Explore
+              </h4>
+              <ul className="space-y-2 text-xs text-white/70">
+                <li>
+                  <a href="#subscriptions-section" className="hover:text-white transition-colors">
+                    Monthly Subscriptions
+                  </a>
+                </li>
+                <li>
+                  <a href="#shop-section" className="hover:text-white transition-colors">
+                    Single-Origin Coffee Bags
+                  </a>
+                </li>
+                <li>
+                  <a href="#origins-section" className="hover:text-white transition-colors">
+                    Global Terroir Map
+                  </a>
+                </li>
+                <li>
+                  <a href="#brewing-school-section" className="hover:text-white transition-colors">
+                    Brewing School Guides
+                  </a>
+                </li>
+                <li>
+                  <a href="#roast-quiz-section" className="hover:text-white transition-colors">
+                    Roast Matcher Quiz
+                  </a>
+                </li>
+              </ul>
+            </div>
 
-      {/* Toast Notifications */}
+            {/* Col 4: Roastery & Customer Care */}
+            <div className="space-y-3">
+              <h4 className="text-xs font-bold uppercase tracking-wider text-[#E69A3B]">
+                Customer Care
+              </h4>
+              <ul className="space-y-2 text-xs text-white/70">
+                <li>
+                  <button
+                    type="button"
+                    onClick={() => openPolicy('about')}
+                    className="hover:text-white transition-colors text-left cursor-pointer"
+                  >
+                    About Roastery
+                  </button>
+                </li>
+                <li>
+                  <button
+                    type="button"
+                    onClick={() => openPolicy('contact')}
+                    className="hover:text-white transition-colors text-left cursor-pointer"
+                  >
+                    Contact & Roaster Advice
+                  </button>
+                </li>
+                <li>
+                  <button
+                    type="button"
+                    onClick={() => openPolicy('faq')}
+                    className="hover:text-white transition-colors text-left cursor-pointer"
+                  >
+                    Frequently Asked Questions
+                  </button>
+                </li>
+                <li>
+                  <button
+                    type="button"
+                    onClick={() => setIsCustomerPortalOpen(true)}
+                    className="hover:text-white transition-colors text-left cursor-pointer"
+                  >
+                    Customer Subscription Portal
+                  </button>
+                </li>
+              </ul>
+            </div>
+
+            {/* Col 5: Legal & Policies (Drafts marked for review) */}
+            <div className="space-y-3">
+              <h4 className="text-xs font-bold uppercase tracking-wider text-[#E69A3B]">
+                Store Policies
+              </h4>
+              <ul className="space-y-2 text-xs text-white/70">
+                <li>
+                  <button
+                    type="button"
+                    onClick={() => openPolicy('shipping')}
+                    className="hover:text-white transition-colors text-left cursor-pointer"
+                  >
+                    Shipping Policy (Draft)
+                  </button>
+                </li>
+                <li>
+                  <button
+                    type="button"
+                    onClick={() => openPolicy('returns')}
+                    className="hover:text-white transition-colors text-left cursor-pointer"
+                  >
+                    Returns & Taste Guarantee
+                  </button>
+                </li>
+                <li>
+                  <button
+                    type="button"
+                    onClick={() => openPolicy('privacy')}
+                    className="hover:text-white transition-colors text-left cursor-pointer"
+                  >
+                    Privacy Policy (Draft)
+                  </button>
+                </li>
+                <li>
+                  <button
+                    type="button"
+                    onClick={() => openPolicy('terms')}
+                    className="hover:text-white transition-colors text-left cursor-pointer"
+                  >
+                    Terms of Service (Draft)
+                  </button>
+                </li>
+              </ul>
+            </div>
+          </div>
+
+          {/* Bottom Copyright & Disclaimer */}
+          <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-white/50">
+            <p>© 2026 {ROASTER_CONFIG.business.name}. All sample products and pricing for demonstration.</p>
+            <div className="flex items-center gap-3">
+              <span>Direct Trade Sourcing</span>
+              <span>·</span>
+              <span>Small Batch Roasted Mondays</span>
+              <span>·</span>
+              <span>PCI-DSS Hosted Checkout</span>
+            </div>
+          </div>
+        </div>
+      </footer>
+
+      {/* Global Interactive Modals & Drawers */}
+      <CartDrawer />
+      <CheckoutModal />
+      <CustomerPortalModal
+        isOpen={isCustomerPortalOpen}
+        onClose={() => setIsCustomerPortalOpen(false)}
+      />
+      <OwnerPortalModal />
+      <PolicyModal />
       <ToastContainer toasts={toasts} onDismiss={handleDismissToast} />
     </div>
+  );
+}
+
+export default function App() {
+  return (
+    <CartProvider>
+      <MainAppContent />
+    </CartProvider>
   );
 }

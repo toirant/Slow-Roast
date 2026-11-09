@@ -1,0 +1,9 @@
+# Robots.txt for Slow Roast Coffee Club
+User-agent: *
+Disallow: /api/
+Disallow: /*?demo=*
+Disallow: /*?checkout=*
+Disallow: /*?orderId=*
+Allow: /
+
+Sitemap: https://slowroastcoffee.club/sitemap.xml

@@ -35,6 +35,7 @@ export function WorldOriginMap({ onSelectOrigin }: WorldOriginMapProps) {
   );
   const [showCoffeeBelt, setShowCoffeeBelt] = useState(true);
   const [hoveredOriginId, setHoveredOriginId] = useState<string | null>(null);
+  const [viewMode, setViewMode] = useState<'map' | 'list'>('map');
 
   const activeOrigin = LAST_THREE_MONTHS_ORIGINS.find((o) => o.id === selectedOriginId) || null;
   const coffeeBeltBounds = getCoffeeBeltYBounds();
@@ -61,83 +62,195 @@ export function WorldOriginMap({ onSelectOrigin }: WorldOriginMapProps) {
   return (
     <div className="w-full">
       {/* Header */}
-      <div className="mb-6">
-        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#24493A]/10 text-[#24493A] text-xs font-semibold tracking-wide uppercase mb-3">
-          <Globe className="w-3.5 h-3.5" aria-hidden="true" />
-          <span>Global Sourcing Traceability</span>
+      <div className="mb-6 flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+        <div>
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#24493A]/10 text-[#24493A] text-xs font-semibold tracking-wide uppercase mb-3">
+            <Globe className="w-3.5 h-3.5" aria-hidden="true" />
+            <span>Global Sourcing Traceability</span>
+          </div>
+          <h2
+            className="text-2xl sm:text-3xl font-semibold text-[#2B2B28] tracking-tight leading-tight mb-2"
+            style={{ fontFamily: "'Fraunces', serif" }}
+          >
+            Where our last 3 months came from
+          </h2>
+          <p className="text-sm sm:text-[15px] leading-relaxed text-[#6F6A60]">
+            Every month, club members receive fresh single-origin coffees from high-altitude
+            terroirs across the equatorial Coffee Belt. Explore by map or accessible list.
+          </p>
         </div>
-        <h2
-          className="text-2xl sm:text-3xl font-semibold text-[#2B2B28] tracking-tight leading-tight mb-2"
-          style={{ fontFamily: "'Fraunces', serif" }}
-        >
-          Where our last 3 months came from
-        </h2>
-        <p className="text-sm sm:text-[15px] leading-relaxed text-[#6F6A60]">
-          Every month, club members receive fresh single-origin coffees from high-altitude
-          terroirs across the equatorial Coffee Belt. Tap a region on the map to explore its
-          altitude, producer story, and roast profile.
-        </p>
-      </div>
 
-      {/* Origin Selection Pills & Coffee Belt Toggle */}
-      <div className="flex flex-wrap items-center justify-between gap-2.5 mb-4">
-        {/* Origin Quick Tabs */}
-        <div className="flex flex-wrap items-center gap-1.5" role="tablist" aria-label="Origin selection">
+        {/* Map vs List View Mode Toggle */}
+        <div className="flex items-center gap-1 p-1 bg-[#DDD2BF]/50 rounded-xl border border-[#DDD2BF] self-start sm:self-auto">
           <button
             type="button"
-            role="tab"
-            aria-selected={selectedOriginId === null}
-            onClick={() => setSelectedOriginId(null)}
-            className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all duration-150 cursor-pointer ${
-              selectedOriginId === null
-                ? 'bg-[#24493A] text-white shadow-xs'
-                : 'bg-[#F1E8D8] text-[#2B2B28] hover:bg-[#EAE0CD] border border-[#DDD2BF]/60'
+            onClick={() => setViewMode('map')}
+            aria-pressed={viewMode === 'map'}
+            className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
+              viewMode === 'map'
+                ? 'bg-white text-[#24493A] shadow-xs'
+                : 'text-[#6F6A60] hover:text-[#2B2B28]'
             }`}
           >
-            All 3 Origins
+            Interactive Map
           </button>
+          <button
+            type="button"
+            onClick={() => setViewMode('list')}
+            aria-pressed={viewMode === 'list'}
+            className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
+              viewMode === 'list'
+                ? 'bg-white text-[#24493A] shadow-xs'
+                : 'text-[#6F6A60] hover:text-[#2B2B28]'
+            }`}
+          >
+            Readable List View
+          </button>
+        </div>
+      </div>
 
-          {LAST_THREE_MONTHS_ORIGINS.map((origin) => {
-            const isSelected = selectedOriginId === origin.id;
-            return (
+      {viewMode === 'list' ? (
+        /* Accessible List View Alternative */
+        <div className="space-y-4" role="region" aria-label="Readable list of recent coffee origins">
+          {LAST_THREE_MONTHS_ORIGINS.map((origin) => (
+            <div
+              key={origin.id}
+              className="p-5 sm:p-6 rounded-2xl bg-white border border-[#DDD2BF] shadow-xs hover:border-[#24493A]/50 transition-all space-y-4"
+            >
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[#DDD2BF]/40 pb-3">
+                <div className="flex items-center gap-2.5">
+                  <span className="text-2xl">{origin.flagEmoji}</span>
+                  <div>
+                    <h3
+                      className="text-lg font-bold text-[#2B2B28]"
+                      style={{ fontFamily: "'Fraunces', serif" }}
+                    >
+                      {origin.country} — {origin.region}
+                    </h3>
+                    <p className="text-xs text-[#6F6A60]">{origin.farmOrCoop} • {origin.farmer}</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-bold text-[#6F6A60] uppercase tracking-wider bg-[#F1E8D8] px-2.5 py-1 rounded">
+                    {origin.month} Selection
+                  </span>
+                  <span className="text-xs font-bold text-[#24493A] bg-[#24493A]/10 px-2.5 py-1 rounded">
+                    {origin.roastProfile}
+                  </span>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
+                <div className="p-2.5 rounded-lg bg-[#FBF7F0] border border-[#DDD2BF]/40">
+                  <span className="text-[11px] text-[#6F6A60] font-medium block">Altitude</span>
+                  <span className="font-bold text-[#2B2B28]">{formatAltitude(origin)}</span>
+                </div>
+                <div className="p-2.5 rounded-lg bg-[#FBF7F0] border border-[#DDD2BF]/40">
+                  <span className="text-[11px] text-[#6F6A60] font-medium block">Varietal</span>
+                  <span className="font-bold text-[#2B2B28]">{origin.varietal}</span>
+                </div>
+                <div className="p-2.5 rounded-lg bg-[#FBF7F0] border border-[#DDD2BF]/40">
+                  <span className="text-[11px] text-[#6F6A60] font-medium block">Process</span>
+                  <span className="font-bold text-[#2B2B28]">{origin.process}</span>
+                </div>
+                <div className="p-2.5 rounded-lg bg-[#FBF7F0] border border-[#DDD2BF]/40">
+                  <span className="text-[11px] text-[#6F6A60] font-medium block">Harvest Window</span>
+                  <span className="font-bold text-[#2B2B28]">{origin.harvestWindow}</span>
+                </div>
+              </div>
+
+              <div>
+                <span className="text-xs font-bold text-[#2B2B28] block mb-1.5">Tasting Profile:</span>
+                <div className="flex flex-wrap gap-1.5">
+                  {origin.tastingNotes.map((note) => (
+                    <span
+                      key={note}
+                      className="text-xs font-medium px-2.5 py-0.5 rounded-md bg-[#24493A]/8 text-[#24493A]"
+                    >
+                      {note}
+                    </span>
+                  ))}
+                </div>
+              </div>
+
+              <p className="text-xs text-[#6F6A60] italic border-l-2 border-[#D9633B] pl-3 py-0.5">
+                &ldquo;{origin.terroirStory}&rdquo;
+              </p>
+
+              <div className="flex justify-end pt-2">
+                <button
+                  type="button"
+                  onClick={() => onSelectOrigin?.(origin)}
+                  className="py-2 px-4 rounded-xl bg-[#24493A] text-white text-xs font-bold hover:bg-[#1B372C] transition-colors cursor-pointer flex items-center gap-1.5"
+                >
+                  <span>Select {origin.country} for Next Box</span>
+                  <ArrowRight className="w-3.5 h-3.5 text-[#E69A3B]" />
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <>
+          {/* Origin Selection Pills & Coffee Belt Toggle */}
+          <div className="flex flex-wrap items-center justify-between gap-2.5 mb-4">
+            {/* Origin Quick Tabs */}
+            <div className="flex flex-wrap items-center gap-1.5" role="tablist" aria-label="Origin selection">
               <button
-                key={origin.id}
                 type="button"
                 role="tab"
-                aria-selected={isSelected}
-                onClick={() => setSelectedOriginId(origin.id)}
-                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all duration-150 cursor-pointer ${
-                  isSelected
-                    ? 'text-white shadow-xs ring-2 ring-offset-1 ring-[#FBF7F0]'
+                aria-selected={selectedOriginId === null}
+                onClick={() => setSelectedOriginId(null)}
+                className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all duration-150 cursor-pointer ${
+                  selectedOriginId === null
+                    ? 'bg-[#24493A] text-white shadow-xs'
                     : 'bg-[#F1E8D8] text-[#2B2B28] hover:bg-[#EAE0CD] border border-[#DDD2BF]/60'
                 }`}
-                style={isSelected ? { backgroundColor: origin.flavorAccentColor } : {}}
               >
-                <span>{origin.flagEmoji}</span>
-                <span>
-                  {origin.month.slice(0, 3)}: {origin.country}
-                </span>
+                All 3 Origins
               </button>
-            );
-          })}
-        </div>
 
-        {/* Coffee Belt Highlight Toggle */}
-        <button
-          type="button"
-          onClick={() => setShowCoffeeBelt((prev) => !prev)}
-          aria-pressed={showCoffeeBelt}
-          className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all duration-150 cursor-pointer border ${
-            showCoffeeBelt
-              ? 'bg-[#E69A3B]/15 text-[#915B17] border-[#E69A3B]/40 font-semibold shadow-2xs'
-              : 'bg-transparent text-[#6F6A60] hover:text-[#2B2B28] border-[#DDD2BF]'
-          }`}
-          title="Toggle equatorial Coffee Belt band (23.5°N - 23.5°S)"
-        >
-          <Layers className="w-3.5 h-3.5 text-[#E69A3B]" aria-hidden="true" />
-          <span>Coffee Belt</span>
-        </button>
-      </div>
+              {LAST_THREE_MONTHS_ORIGINS.map((origin) => {
+                const isSelected = selectedOriginId === origin.id;
+                return (
+                  <button
+                    key={origin.id}
+                    type="button"
+                    role="tab"
+                    aria-selected={isSelected}
+                    onClick={() => setSelectedOriginId(origin.id)}
+                    className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all duration-150 cursor-pointer ${
+                      isSelected
+                        ? 'text-white shadow-xs ring-2 ring-offset-1 ring-[#FBF7F0]'
+                        : 'bg-[#F1E8D8] text-[#2B2B28] hover:bg-[#EAE0CD] border border-[#DDD2BF]/60'
+                    }`}
+                    style={isSelected ? { backgroundColor: origin.flavorAccentColor } : {}}
+                  >
+                    <span>{origin.flagEmoji}</span>
+                    <span>
+                      {origin.month.slice(0, 3)}: {origin.country}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Coffee Belt Highlight Toggle */}
+            <button
+              type="button"
+              onClick={() => setShowCoffeeBelt((prev) => !prev)}
+              aria-pressed={showCoffeeBelt}
+              className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all duration-150 cursor-pointer border ${
+                showCoffeeBelt
+                  ? 'bg-[#E69A3B]/15 text-[#915B17] border-[#E69A3B]/40 font-semibold shadow-2xs'
+                  : 'bg-transparent text-[#6F6A60] hover:text-[#2B2B28] border-[#DDD2BF]'
+              }`}
+              title="Toggle equatorial Coffee Belt band (23.5°N - 23.5°S)"
+            >
+              <Layers className="w-3.5 h-3.5 text-[#E69A3B]" aria-hidden="true" />
+              <span>Coffee Belt</span>
+            </button>
+          </div>
 
       {/* World Map SVG Container */}
       <div className="relative w-full rounded-xl overflow-hidden border border-[#DDD2BF] bg-[#F7F2E8] shadow-xs">
@@ -552,6 +665,8 @@ export function WorldOriginMap({ onSelectOrigin }: WorldOriginMapProps) {
           </div>
         )}
       </div>
-    </div>
+    </>
+  )}
+</div>
   );
 }
