@@ -6,4 +6,4 @@ Disallow: /*?checkout=*
 Disallow: /*?orderId=*
 Allow: /
 
-Sitemap: https://slowroastcoffee.club/sitemap.xml
+Sitemap: https://yourroastery.com/sitemap.xml

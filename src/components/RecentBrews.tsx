@@ -59,7 +59,7 @@ export function RecentBrews({ onRateCoffee }: RecentBrewsProps) {
 
           <div className="flex items-center gap-1 text-xs font-semibold text-[#6F6A60] bg-[#F1E8D8] px-2.5 py-1 rounded-md border border-[#DDD2BF]/60">
             <Star className="w-3.5 h-3.5 fill-[#E69A3B] text-[#E69A3B]" aria-hidden="true" />
-            <span>Avg {averageScore} / 5</span>
+            <span>Example rating (demo): {averageScore} / 5</span>
           </div>
         </div>
 
@@ -177,7 +177,10 @@ export function RecentBrews({ onRateCoffee }: RecentBrewsProps) {
                 <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 mb-3">
                   {/* Coffee Origin & Title */}
                   <div className="flex-1">
-                    <div className="flex flex-wrap items-center gap-2 mb-1">
+                    <div className="flex flex-wrap items-center gap-2 mb-1.5">
+                      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#E69A3B]/20 text-[#B85025] border border-[#E69A3B]/40 uppercase tracking-wider">
+                        Sample review
+                      </span>
                       <span className="text-base" role="img" aria-label={brew.origin}>
                         {brew.flagEmoji}
                       </span>
@@ -212,7 +215,7 @@ export function RecentBrews({ onRateCoffee }: RecentBrewsProps) {
                   {/* Interactive Star-Rating Input */}
                   <div className="shrink-0 flex flex-col sm:items-end">
                     <div className="text-[11px] font-semibold text-[#6F6A60] uppercase tracking-wider mb-1">
-                      Your Rating:
+                      Rated {displayRating}/5:
                     </div>
 
                     <div

@@ -6,12 +6,15 @@
 import React, { useState } from 'react';
 import { ChevronDown, HelpCircle, Mail, Sparkles, CheckCircle2 } from 'lucide-react';
 import { FAQS, filterFaqs, FAQItem } from '../data/faqs.ts';
+import { getSupportEmailHref, getDisplaySupportEmail } from '../config/roasterConfig.ts';
+import { useCart } from '../context/CartContext.tsx';
 
 interface FAQSectionProps {
   onJoinClick?: () => void;
 }
 
 export function FAQSection({ onJoinClick }: FAQSectionProps) {
+  const { mode } = useCart();
   // First item open by default to invite interaction
   const [openId, setOpenId] = useState<string | null>('shipping-speed');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
@@ -181,10 +184,10 @@ export function FAQSection({ onJoinClick }: FAQSectionProps) {
         </div>
 
         <a
-          href="mailto:hello@slowroastcoffee.club"
+          href={getSupportEmailHref()}
           className="inline-flex items-center justify-center px-4 py-2 rounded-full text-xs font-semibold text-[#24493A] border border-[#24493A]/40 hover:bg-[#24493A] hover:text-white transition-colors cursor-pointer"
         >
-          Email roasters
+          Email roasters: {getDisplaySupportEmail(mode)}
         </a>
       </div>
     </section>

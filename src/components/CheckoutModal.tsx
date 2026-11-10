@@ -46,15 +46,15 @@ export function CheckoutModal() {
   const [createdOrder, setCreatedOrder] = useState<OrderRecord | null>(null);
 
   const [formData, setFormData] = useState<CheckoutFormData>({
-    fullName: 'Jordan Miller',
-    email: 'jordan.miller@example.com',
-    streetAddress: '450 Craft Roaster Blvd',
-    apartment: 'Apt 4B',
-    city: 'Seattle',
-    stateProvince: 'WA',
-    postalCode: '98101',
+    fullName: '',
+    email: '',
+    streetAddress: '',
+    apartment: '',
+    city: '',
+    stateProvince: '',
+    postalCode: '',
     country: 'United States',
-    deliveryNotes: 'Leave on porch near front planter.',
+    deliveryNotes: '',
     paymentMethod: 'card-simulated',
   });
 
@@ -198,7 +198,7 @@ export function CheckoutModal() {
                       onClick={() => fillTestPreset('success')}
                       className="text-[11px] font-semibold text-[#24493A] underline hover:text-[#1B372C] cursor-pointer"
                     >
-                      Fill Valid Test Data
+                      Fill sample data
                     </button>
                     <span className="text-black/20">|</span>
                     <button
@@ -279,6 +279,7 @@ export function CheckoutModal() {
                   <input
                     id="checkout-fullName"
                     type="text"
+                    placeholder="e.g. Jordan Miller"
                     value={formData.fullName}
                     onChange={(e) => handleInputChange('fullName', e.target.value)}
                     className={`w-full py-2 px-3 text-xs border rounded-xl bg-white ${
@@ -297,6 +298,7 @@ export function CheckoutModal() {
                   <input
                     id="checkout-email"
                     type="email"
+                    placeholder="e.g. jordan@example.com"
                     value={formData.email}
                     onChange={(e) => handleInputChange('email', e.target.value)}
                     className={`w-full py-2 px-3 text-xs border rounded-xl bg-white ${
@@ -324,6 +326,7 @@ export function CheckoutModal() {
                     <input
                       id="checkout-street"
                       type="text"
+                      placeholder="e.g. 450 Craft Roaster Blvd"
                       value={formData.streetAddress}
                       onChange={(e) => handleInputChange('streetAddress', e.target.value)}
                       className={`w-full py-2 px-3 text-xs border rounded-xl bg-white ${
@@ -343,6 +346,7 @@ export function CheckoutModal() {
                     <input
                       id="checkout-apt"
                       type="text"
+                      placeholder="e.g. Apt 4B (optional)"
                       value={formData.apartment || ''}
                       onChange={(e) => handleInputChange('apartment', e.target.value)}
                       className="w-full py-2 px-3 text-xs border border-[#DDD2BF] rounded-xl bg-white"
@@ -358,6 +362,7 @@ export function CheckoutModal() {
                     <input
                       id="checkout-city"
                       type="text"
+                      placeholder="e.g. Seattle"
                       value={formData.city}
                       onChange={(e) => handleInputChange('city', e.target.value)}
                       className={`w-full py-2 px-3 text-xs border rounded-xl bg-white ${
@@ -375,6 +380,7 @@ export function CheckoutModal() {
                     <input
                       id="checkout-state"
                       type="text"
+                      placeholder="e.g. WA"
                       value={formData.stateProvince}
                       onChange={(e) => handleInputChange('stateProvince', e.target.value)}
                       className={`w-full py-2 px-3 text-xs border rounded-xl bg-white ${
@@ -394,6 +400,7 @@ export function CheckoutModal() {
                     <input
                       id="checkout-zip"
                       type="text"
+                      placeholder="e.g. 98101"
                       value={formData.postalCode}
                       onChange={(e) => handleInputChange('postalCode', e.target.value)}
                       className={`w-full py-2 px-3 text-xs border rounded-xl bg-white ${

@@ -281,7 +281,7 @@ export function WorldOriginMap({ onSelectOrigin }: WorldOriginMapProps) {
           </defs>
 
           {/* Graticule Background Grid */}
-          <g className="graticules" stroke="#DDD2BF" strokeWidth="0.75" strokeDasharray="3 3" opacity="0.6">
+          <g className="graticules pointer-events-none" stroke="#DDD2BF" strokeWidth="0.75" strokeDasharray="3 3" opacity="0.6">
             {GRATICULES.map((g) => (
               <line key={g.id} x1="0" y1={g.y} x2={MAP_DIMENSIONS.width} y2={g.y} />
             ))}
@@ -293,7 +293,7 @@ export function WorldOriginMap({ onSelectOrigin }: WorldOriginMapProps) {
 
           {/* Coffee Belt Band (23.5° N to 23.5° S) */}
           {showCoffeeBelt && (
-            <g className="coffee-belt transition-opacity duration-300">
+            <g className="coffee-belt pointer-events-none transition-opacity duration-300">
               <rect
                 x="0"
                 y={coffeeBeltBounds.yTop}
@@ -342,7 +342,7 @@ export function WorldOriginMap({ onSelectOrigin }: WorldOriginMapProps) {
           )}
 
           {/* Continents */}
-          <g className="continents">
+          <g className="continents pointer-events-none">
             {CONTINENT_PATHS.map((continent) => (
               <path
                 key={continent.id}
@@ -357,7 +357,7 @@ export function WorldOriginMap({ onSelectOrigin }: WorldOriginMapProps) {
           </g>
 
           {/* Connecting Sourcing Arcs between Origin Hubs */}
-          <g className="origin-arcs" opacity={selectedOriginId === null ? 0.8 : 0.4}>
+          <g className="origin-arcs pointer-events-none" opacity={selectedOriginId === null ? 0.8 : 0.4}>
             {(() => {
               const p1 = projectCoordinates(
                 LAST_THREE_MONTHS_ORIGINS[2].lat,
@@ -420,10 +420,23 @@ export function WorldOriginMap({ onSelectOrigin }: WorldOriginMapProps) {
                 }}
                 onMouseEnter={() => setHoveredOriginId(origin.id)}
                 onMouseLeave={() => setHoveredOriginId(null)}
-                className="cursor-pointer focus:outline-hidden group"
+                className="cursor-pointer focus:outline-hidden group pointer-events-auto"
                 transform={`translate(${x}, ${y})`}
                 opacity={isDimmed ? 0.5 : 1}
               >
+                {/* Generous transparent hit area for click and touch tolerance */}
+                <circle r="26" fill="transparent" className="cursor-pointer" />
+
+                {/* Visible Keyboard Focus Ring */}
+                <circle
+                  r="20"
+                  fill="none"
+                  stroke="#E69A3B"
+                  strokeWidth="2.5"
+                  strokeDasharray="4 3"
+                  className="opacity-0 group-focus-visible:opacity-100 group-focus:opacity-100 transition-opacity"
+                />
+
                 {/* Radar Pulse Effect for Active or Hovered Marker */}
                 {(isSelected || isHovered) && (
                   <circle

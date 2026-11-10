@@ -26,6 +26,20 @@ export interface CoffeeProduct {
   isPopular?: boolean;
 }
 
+/**
+ * Single configurable support email for the roastery.
+ * In Demo Mode, shown with an explicit placeholder note ("hello@yourroastery.com (example)").
+ */
+export const SUPPORT_EMAIL = 'hello@yourroastery.com';
+
+export function getDisplaySupportEmail(mode: 'demo' | 'live' = 'demo'): string {
+  return mode === 'demo' ? `${SUPPORT_EMAIL} (example)` : SUPPORT_EMAIL;
+}
+
+export function getSupportEmailHref(): string {
+  return `mailto:${SUPPORT_EMAIL}`;
+}
+
 export interface RoasterConfig {
   business: {
     name: string;
@@ -44,6 +58,12 @@ export interface RoasterConfig {
     currencySymbol: string;
     freeShippingThreshold: number; // e.g. $35
     standardShippingFee: number; // e.g. $5
+    shippingRegion: string;
+    socialLinks: {
+      instagram: string;
+      twitter: string;
+      youtube: string;
+    };
     samplePriceDisclaimer: string;
     subscriptionFrequencies: {
       id: '2-weeks' | '4-weeks' | '6-weeks';
@@ -80,7 +100,7 @@ export const ROASTER_CONFIG: RoasterConfig = {
       'A customizable craft coffee club platform built for independent micro-roasters. Combines fresh subscription management, interactive origin discovery, and guided home brewing technique.',
     roastDays: 'Roasted every Monday morning',
     shippingDays: 'Hand-packed & dispatched every Tuesday',
-    contactEmail: 'roaster@slowroastcoffee.club',
+    contactEmail: SUPPORT_EMAIL,
     supportHours: 'Monday–Friday, 9am–5pm PT (1 business day response)',
     sampleNotice: 'DEMO MODE: Sample products, pricing and simulated checkout. No real cards charged.',
     locationNote: 'Direct-Trade Sourcing • Roasted locally in small batches',
@@ -90,6 +110,12 @@ export const ROASTER_CONFIG: RoasterConfig = {
     currencySymbol: '$',
     freeShippingThreshold: 35.0,
     standardShippingFee: 5.0,
+    shippingRegion: 'United States (All 50 States, Territories & APO/FPO addresses)',
+    socialLinks: {
+      instagram: 'https://instagram.com',
+      twitter: 'https://x.com',
+      youtube: 'https://youtube.com',
+    },
     samplePriceDisclaimer: 'All prices shown are example rates for demonstration purposes.',
     subscriptionFrequencies: [
       {

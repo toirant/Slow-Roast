@@ -29,24 +29,24 @@ export function Navbar() {
 
   return (
     <header className="sticky top-0 z-40 w-full bg-[#FBF7F0]/95 backdrop-blur-md border-b border-[#DDD2BF] transition-all">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+      <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 min-h-[4.5rem] py-2.5 sm:py-3.5 flex items-center justify-between gap-2 sm:gap-4">
         {/* Brand Logo & Tagline */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1 sm:flex-initial">
           <a
             href="#hero-section"
-            className="flex items-center gap-2.5 text-[#24493A] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#24493A] rounded-lg p-1"
+            className="flex items-center gap-2 sm:gap-2.5 text-[#24493A] focus:outline-hidden focus-visible:ring-2 focus-visible:ring-[#24493A] rounded-lg p-0.5 sm:p-1 min-w-0 max-w-full"
           >
-            <div className="w-10 h-10 rounded-xl bg-[#24493A] text-[#FBF7F0] flex items-center justify-center shadow-sm">
-              <Coffee className="w-5 h-5 text-[#E69A3B]" />
+            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-[#24493A] text-[#FBF7F0] flex items-center justify-center shadow-xs shrink-0">
+              <Coffee className="w-4 h-4 sm:w-5 sm:h-5 text-[#E69A3B]" />
             </div>
-            <div className="flex flex-col">
+            <div className="flex flex-col min-w-0">
               <span
-                className="text-2xl font-bold tracking-tight text-[#24493A] leading-tight"
+                className="text-[15px] sm:text-xl md:text-2xl font-bold tracking-tight text-[#24493A] leading-tight truncate sm:whitespace-normal"
                 style={{ fontFamily: "'Fraunces', serif" }}
               >
                 {ROASTER_CONFIG.business.name}
               </span>
-              <span className="text-[11px] font-medium text-[#6F6A60] tracking-wider uppercase">
+              <span className="text-[10px] sm:text-[11px] font-medium text-[#6F6A60] tracking-wider uppercase truncate hidden xs:block">
                 {ROASTER_CONFIG.business.locationNote}
               </span>
             </div>
@@ -103,16 +103,16 @@ export function Navbar() {
         </nav>
 
         {/* Right Action Icons */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
           {/* Roaster Owner Admin button */}
           <button
             type="button"
             onClick={openOwnerPortal}
             aria-label="Open Roaster Owner Dashboard & Launch Checklist"
-            className="p-2.5 rounded-xl border border-[#DDD2BF] bg-[#F1E8D8] text-[#24493A] hover:bg-[#EAE0CD] transition-all cursor-pointer focus-visible:ring-2 focus-visible:ring-[#24493A]"
+            className="p-2 sm:p-2.5 rounded-xl border border-[#DDD2BF] bg-[#F1E8D8] text-[#24493A] hover:bg-[#EAE0CD] transition-all cursor-pointer focus-visible:ring-2 focus-visible:ring-[#24493A]"
             title="Roaster Owner Settings & Launch Checklist"
           >
-            <Settings className="w-5 h-5" />
+            <Settings className="w-4 h-4 sm:w-5 sm:h-5" />
           </button>
 
           {/* Cart Drawer Trigger */}
@@ -120,12 +120,12 @@ export function Navbar() {
             type="button"
             onClick={openCart}
             aria-label={`Shopping Cart, ${totalQuantity} items`}
-            className="relative p-2.5 rounded-xl bg-[#24493A] text-white hover:bg-[#1B372C] transition-all cursor-pointer shadow-sm focus-visible:ring-2 focus-visible:ring-[#24493A] flex items-center gap-2"
+            className="relative p-2 sm:p-2.5 rounded-xl bg-[#24493A] text-white hover:bg-[#1B372C] transition-all cursor-pointer shadow-xs focus-visible:ring-2 focus-visible:ring-[#24493A] flex items-center gap-1.5 sm:gap-2"
           >
-            <ShoppingBag className="w-5 h-5 text-[#E69A3B]" />
-            <span className="text-sm font-semibold hidden sm:inline">Cart</span>
+            <ShoppingBag className="w-4 h-4 sm:w-5 sm:h-5 text-[#E69A3B]" />
+            <span className="text-xs sm:text-sm font-semibold hidden lg:inline">Cart</span>
             {totalQuantity > 0 && (
-              <span className="w-5 h-5 rounded-full bg-[#D9633B] text-white text-xs font-bold flex items-center justify-center">
+              <span className="w-4 h-4 sm:w-5 sm:h-5 rounded-full bg-[#D9633B] text-white text-[10px] sm:text-xs font-bold flex items-center justify-center">
                 {totalQuantity}
               </span>
             )}
@@ -136,9 +136,9 @@ export function Navbar() {
             type="button"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             aria-label={mobileMenuOpen ? 'Close Navigation Menu' : 'Open Navigation Menu'}
-            className="md:hidden p-2.5 rounded-xl border border-[#DDD2BF] text-[#2B2B28] hover:bg-[#F1E8D8] transition-colors"
+            className="md:hidden p-2 sm:p-2.5 rounded-xl border border-[#DDD2BF] text-[#2B2B28] hover:bg-[#F1E8D8] transition-colors"
           >
-            {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+            {mobileMenuOpen ? <X className="w-4 h-4 sm:w-5 sm:h-5" /> : <Menu className="w-4 h-4 sm:w-5 sm:h-5" />}
           </button>
         </div>
       </div>

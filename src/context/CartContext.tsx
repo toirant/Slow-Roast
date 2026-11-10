@@ -19,7 +19,8 @@ export type PolicyType =
   | 'shipping'
   | 'returns'
   | 'privacy'
-  | 'terms';
+  | 'terms'
+  | 'manage-subscription';
 
 interface CartContextType {
   items: CartItem[];
@@ -29,6 +30,7 @@ interface CartContextType {
   isCartOpen: boolean;
   isCheckoutOpen: boolean;
   isOwnerPortalOpen: boolean;
+  isCustomerPortalOpen: boolean;
   activePolicy: PolicyType | null;
   mode: 'demo' | 'live';
   isStripeLiveConfigured: boolean;
@@ -53,40 +55,26 @@ interface CartContextType {
   closeCheckout: () => void;
   openOwnerPortal: () => void;
   closeOwnerPortal: () => void;
+  openCustomerPortal: () => void;
+  closeCustomerPortal: () => void;
   openPolicy: (policy: PolicyType) => void;
   closePolicy: () => void;
   setMode: (mode: 'demo' | 'live') => void;
   setConfirmedOrder: (order: OrderRecord | null) => void;
   clearCart: () => void;
+  resetDemo: () => void;
 }
 
 const CartContext = createContext<CartContextType | null>(null);
 
 export function CartProvider({ children }: { children: React.ReactNode }) {
-  const [items, setItems] = useState<CartItem[]>(() => {
-    // Default initial sample item in cart so demo visitors immediately see cart state
-    const defaultProduct = ROASTER_CONFIG.products[0];
-    return [
-      {
-        id: 'initial-sub-roasters-choice',
-        productId: defaultProduct.id,
-        title: defaultProduct.title,
-        subtitle: defaultProduct.subtitle,
-        image: defaultProduct.image,
-        isSubscription: true,
-        grind: 'Whole Bean',
-        bagWeight: '12oz',
-        frequency: '4-weeks',
-        unitPrice: 32.4, // 10% off $36
-        quantity: 1,
-      },
-    ];
-  });
-
-  const [couponCode, setCouponCode] = useState<string>('FIRSTBOX');
+  // First-time visitor starts with an empty cart and no discount applied
+  const [items, setItems] = useState<CartItem[]>([]);
+  const [couponCode, setCouponCode] = useState<string>('');
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
   const [isOwnerPortalOpen, setIsOwnerPortalOpen] = useState(false);
+  const [isCustomerPortalOpen, setIsCustomerPortalOpen] = useState(false);
   const [activePolicy, setActivePolicy] = useState<PolicyType | null>(null);
   const [mode, setMode] = useState<'demo' | 'live'>('demo');
   const [isStripeLiveConfigured, setIsStripeLiveConfigured] = useState(false);
@@ -214,6 +202,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         isCartOpen,
         isCheckoutOpen,
         isOwnerPortalOpen,
+        isCustomerPortalOpen,
         activePolicy,
         mode,
         isStripeLiveConfigured,
@@ -232,11 +221,21 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         closeCheckout: () => setIsCheckoutOpen(false),
         openOwnerPortal: () => setIsOwnerPortalOpen(true),
         closeOwnerPortal: () => setIsOwnerPortalOpen(false),
+        openCustomerPortal: () => setIsCustomerPortalOpen(true),
+        closeCustomerPortal: () => setIsCustomerPortalOpen(false),
         openPolicy: (policy: PolicyType) => setActivePolicy(policy),
         closePolicy: () => setActivePolicy(null),
         setMode,
         setConfirmedOrder,
         clearCart,
+        resetDemo: () => {
+          setItems([]);
+          setCouponCode('');
+          setConfirmedOrder(null);
+          setIsCartOpen(false);
+          setIsCheckoutOpen(false);
+          setIsCustomerPortalOpen(false);
+        },
       }}
     >
       {children}

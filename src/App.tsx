@@ -40,15 +40,27 @@ import { CustomerPortalModal } from './components/CustomerPortalModal.tsx';
 import { OwnerPortalModal } from './components/OwnerPortalModal.tsx';
 import { PolicyModal } from './components/PolicyModal.tsx';
 import { ToastContainer } from './components/Toast.tsx';
-import { ROASTER_CONFIG } from './config/roasterConfig.ts';
+import {
+  ROASTER_CONFIG,
+  getDisplaySupportEmail,
+  getSupportEmailHref,
+} from './config/roasterConfig.ts';
 import { ToastItem, ToastVariant, createToast, addToast, removeToast } from './utils/toast.ts';
 import { RoastLevel, BrewMethod } from './utils/coffeePlan.ts';
 import { RoastType } from './utils/roastComparison.ts';
 
 function MainAppContent() {
-  const { addItem, openCheckout, openPolicy, confirmedOrder } = useCart();
+  const {
+    addItem,
+    openCheckout,
+    openPolicy,
+    confirmedOrder,
+    mode,
+    isCustomerPortalOpen,
+    openCustomerPortal,
+    closeCustomerPortal,
+  } = useCart();
   const [toasts, setToasts] = useState<ToastItem[]>([]);
-  const [isCustomerPortalOpen, setIsCustomerPortalOpen] = useState(false);
 
   const showToast = (title: string, message: string, variant: ToastVariant = 'success') => {
     const newToast = createToast(title, message, variant);
@@ -138,53 +150,53 @@ function MainAppContent() {
         <section
           id="hero-section"
           aria-labelledby="hero-heading"
-          className="relative bg-linear-to-b from-[#FBF7F0] to-[#EFE7DA]/40 pt-10 pb-16 sm:pt-16 sm:pb-24 border-b border-[#DDD2BF]"
+          className="relative bg-linear-to-b from-[#FBF7F0] to-[#EFE7DA]/40 pt-6 pb-12 sm:pt-16 sm:pb-24 border-b border-[#DDD2BF] overflow-hidden"
         >
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
               {/* Left Column: Editorial Value Proposition */}
-              <div className="lg:col-span-7 space-y-6 text-left">
-                <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#24493A]/10 text-[#24493A] text-xs font-bold tracking-wider uppercase">
-                  <Coffee className="w-3.5 h-3.5 text-[#D9633B]" />
+              <div className="lg:col-span-7 space-y-4 sm:space-y-6 text-left min-w-0">
+                <div className="inline-flex flex-wrap items-center gap-1.5 sm:gap-2 max-w-full px-3 py-1.5 rounded-xl sm:rounded-full bg-[#24493A]/10 text-[#24493A] text-xs font-bold tracking-wider uppercase">
+                  <Coffee className="w-3.5 h-3.5 text-[#D9633B] shrink-0" />
                   <span>{ROASTER_CONFIG.business.badgeText}</span>
-                  <span className="text-[#6F6A60]">·</span>
+                  <span className="text-[#6F6A60] hidden xs:inline">·</span>
                   <span className="text-[#6F6A60]">{ROASTER_CONFIG.business.roastDays}</span>
                 </div>
 
                 <h1
                   id="hero-heading"
-                  className="text-4xl sm:text-6xl font-semibold tracking-tight text-[#2B2B28] leading-[1.08]"
+                  className="text-3xl sm:text-5xl lg:text-6xl font-semibold tracking-tight text-[#2B2B28] leading-[1.14] sm:leading-[1.08] break-words"
                   style={{ fontFamily: "'Fraunces', serif" }}
                 >
                   Brew a <span className="italic text-[#D9633B]">better morning</span>, one fresh roast at a time.
                 </h1>
 
-                <p className="text-lg sm:text-xl leading-relaxed text-[#6F6A60] max-w-2xl">
+                <p className="text-base sm:text-lg lg:text-xl leading-relaxed text-[#6F6A60] max-w-2xl break-words">
                   Small-batch, single-origin coffees from independent farms delivered to your door with
                   clear, jargon-free technique guides. Taste the difference of fresh-roasted beans.
                 </p>
 
                 {/* Primary & Secondary Action Buttons */}
-                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3.5 pt-2">
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 pt-2">
                   <button
                     type="button"
                     onClick={handleHeroSubscribe}
-                    className="py-4 px-8 rounded-2xl bg-[#24493A] hover:bg-[#1B372C] text-white font-bold text-base shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer focus-visible:ring-2 focus-visible:ring-[#24493A]"
+                    className="py-3.5 sm:py-4 px-6 sm:px-8 rounded-2xl bg-[#24493A] hover:bg-[#1B372C] text-white font-bold text-base shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer focus-visible:ring-2 focus-visible:ring-[#24493A] w-full sm:w-auto"
                   >
                     <span>Start My Subscription</span>
-                    <ArrowRight className="w-4 h-4 text-[#E69A3B]" />
+                    <ArrowRight className="w-4 h-4 text-[#E69A3B] shrink-0" />
                   </button>
 
                   <a
                     href="#shop-section"
-                    className="py-4 px-6 rounded-2xl border-2 border-[#24493A] text-[#24493A] hover:bg-[#24493A]/5 font-bold text-base text-center transition-colors cursor-pointer"
+                    className="py-3.5 sm:py-4 px-5 sm:px-6 rounded-2xl border-2 border-[#24493A] text-[#24493A] hover:bg-[#24493A]/5 font-bold text-base text-center transition-colors cursor-pointer w-full sm:w-auto"
                   >
                     Browse Single Bags
                   </a>
                 </div>
 
                 {/* Verified Operational Commitments (No fake metrics) */}
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-6 border-t border-[#DDD2BF]/80">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 pt-5 sm:pt-6 border-t border-[#DDD2BF]/80">
                   <div className="flex items-start gap-2.5">
                     <Truck className="w-4 h-4 text-[#D9633B] shrink-0 mt-0.5" />
                     <div className="text-xs">
@@ -212,8 +224,8 @@ function MainAppContent() {
               </div>
 
               {/* Right Column: Hero Visual Media */}
-              <div className="lg:col-span-5">
-                <div className="relative rounded-3xl overflow-hidden border border-[#DDD2BF] shadow-xl bg-white p-3">
+              <div className="lg:col-span-5 w-full min-w-0">
+                <div className="relative rounded-2xl sm:rounded-3xl overflow-hidden border border-[#DDD2BF] shadow-xl bg-white p-2 sm:p-3 w-full">
                   <MediaFrame
                     aspectRatio="4/3"
                     imageSrc="/Hero.jpg"
@@ -222,9 +234,9 @@ function MainAppContent() {
                     isHero={true}
                     fallbackVariant="hero"
                     badge={
-                      <div className="inline-flex items-center gap-2 bg-[#FBF7F0]/95 backdrop-blur-xs text-[#24493A] text-xs font-semibold px-3 py-1.5 rounded-full shadow-md border border-[#DDD2BF]/70">
-                        <Coffee className="w-3.5 h-3.5 text-[#D9633B]" />
-                        <span>Mondays: Fresh Roast Day</span>
+                      <div className="inline-flex items-center gap-1.5 sm:gap-2 bg-[#FBF7F0]/95 backdrop-blur-xs text-[#24493A] text-[11px] sm:text-xs font-semibold px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full shadow-md border border-[#DDD2BF]/70 max-w-[calc(100%-1rem)]">
+                        <Coffee className="w-3.5 h-3.5 text-[#D9633B] shrink-0" />
+                        <span className="truncate">Mondays: Fresh Roast Day</span>
                       </div>
                     }
                   />
@@ -237,7 +249,7 @@ function MainAppContent() {
                       </span>
                       <button
                         type="button"
-                        onClick={() => setIsCustomerPortalOpen(true)}
+                        onClick={openCustomerPortal}
                         className="text-[#24493A] font-bold underline hover:text-[#183127] cursor-pointer"
                       >
                         Manage Subscription
@@ -402,29 +414,36 @@ function MainAppContent() {
               </p>
               <div className="flex items-center gap-3 pt-2">
                 <a
-                  href="#instagram"
-                  aria-label="Slow Roast Instagram"
+                  href={ROASTER_CONFIG.commerce.socialLinks.instagram}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={`${ROASTER_CONFIG.business.name} Instagram`}
                   className="w-8 h-8 rounded-full border border-white/20 flex items-center justify-center text-white/80 hover:bg-white hover:text-[#1F2A24] transition-all"
                 >
                   <Instagram className="w-4 h-4" />
                 </a>
                 <a
-                  href="#twitter"
-                  aria-label="Slow Roast Twitter"
+                  href={ROASTER_CONFIG.commerce.socialLinks.twitter}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={`${ROASTER_CONFIG.business.name} on X / Twitter`}
                   className="w-8 h-8 rounded-full border border-white/20 flex items-center justify-center text-white/80 hover:bg-white hover:text-[#1F2A24] transition-all"
                 >
                   <Twitter className="w-4 h-4" />
                 </a>
                 <a
-                  href="#youtube"
-                  aria-label="Slow Roast YouTube"
+                  href={ROASTER_CONFIG.commerce.socialLinks.youtube}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={`${ROASTER_CONFIG.business.name} YouTube Channel`}
                   className="w-8 h-8 rounded-full border border-white/20 flex items-center justify-center text-white/80 hover:bg-white hover:text-[#1F2A24] transition-all"
                 >
                   <Youtube className="w-4 h-4" />
                 </a>
                 <a
-                  href={`mailto:${ROASTER_CONFIG.business.contactEmail}`}
-                  aria-label="Email Roastery"
+                  href={getSupportEmailHref()}
+                  title={getDisplaySupportEmail(mode)}
+                  aria-label={`Email Roastery Support (${getDisplaySupportEmail(mode)})`}
                   className="w-8 h-8 rounded-full border border-white/20 flex items-center justify-center text-white/80 hover:bg-white hover:text-[#1F2A24] transition-all"
                 >
                   <Mail className="w-4 h-4" />
@@ -502,7 +521,7 @@ function MainAppContent() {
                 <li>
                   <button
                     type="button"
-                    onClick={() => setIsCustomerPortalOpen(true)}
+                    onClick={openCustomerPortal}
                     className="hover:text-white transition-colors text-left cursor-pointer"
                   >
                     Customer Subscription Portal
@@ -511,7 +530,7 @@ function MainAppContent() {
               </ul>
             </div>
 
-            {/* Col 5: Legal & Policies (Drafts marked for review) */}
+            {/* Col 5: Legal & Policies */}
             <div className="space-y-3">
               <h4 className="text-xs font-bold uppercase tracking-wider text-[#E69A3B]">
                 Store Policies
@@ -523,7 +542,7 @@ function MainAppContent() {
                     onClick={() => openPolicy('shipping')}
                     className="hover:text-white transition-colors text-left cursor-pointer"
                   >
-                    Shipping Policy (Draft)
+                    Shipping Policy
                   </button>
                 </li>
                 <li>
@@ -532,7 +551,7 @@ function MainAppContent() {
                     onClick={() => openPolicy('returns')}
                     className="hover:text-white transition-colors text-left cursor-pointer"
                   >
-                    Returns & Taste Guarantee
+                    Refunds & Cancellations
                   </button>
                 </li>
                 <li>
@@ -541,7 +560,7 @@ function MainAppContent() {
                     onClick={() => openPolicy('privacy')}
                     className="hover:text-white transition-colors text-left cursor-pointer"
                   >
-                    Privacy Policy (Draft)
+                    Privacy Policy
                   </button>
                 </li>
                 <li>
@@ -550,7 +569,16 @@ function MainAppContent() {
                     onClick={() => openPolicy('terms')}
                     className="hover:text-white transition-colors text-left cursor-pointer"
                   >
-                    Terms of Service (Draft)
+                    Terms of Service
+                  </button>
+                </li>
+                <li>
+                  <button
+                    type="button"
+                    onClick={() => openPolicy('manage-subscription')}
+                    className="hover:text-white text-[#E69A3B] transition-colors text-left cursor-pointer font-medium"
+                  >
+                    Unsubscribe / Manage subscription
                   </button>
                 </li>
               </ul>
@@ -576,7 +604,7 @@ function MainAppContent() {
       <CheckoutModal />
       <CustomerPortalModal
         isOpen={isCustomerPortalOpen}
-        onClose={() => setIsCustomerPortalOpen(false)}
+        onClose={closeCustomerPortal}
       />
       <OwnerPortalModal />
       <PolicyModal />

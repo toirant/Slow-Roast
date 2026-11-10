@@ -119,7 +119,7 @@ export const MediaFrame: React.FC<MediaFrameProps> = ({
       )}
 
       {/* Floating Badge (e.g. Hero badge) */}
-      {badge && <div className="absolute bottom-4 left-4 z-20">{badge}</div>}
+      {badge && <div className="absolute bottom-3 left-3 sm:bottom-4 sm:left-4 z-20 max-w-[calc(100%-1.5rem)] sm:max-w-[calc(100%-2rem)]">{badge}</div>}
     </div>
   );
 };
